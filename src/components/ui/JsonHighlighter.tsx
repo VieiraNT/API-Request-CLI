@@ -3,7 +3,7 @@
 import React from "react";
 
 interface JsonHighlighterProps {
-  data: any;
+  data: unknown;
 }
 
 const JsonHighlighter = ({ data }: JsonHighlighterProps) => {
@@ -26,20 +26,44 @@ const JsonHighlighter = ({ data }: JsonHighlighterProps) => {
 
               if (part.startsWith('"') && part.endsWith('"')) {
                 if (line.includes(`${part}:`)) {
-                  return <span key={partIndex} className="text-[#66d9ff]">{part}</span>;
+                  return (
+                    <span key={partIndex} className="text-[#66d9ff]">
+                      {part}
+                    </span>
+                  );
                 }
-                return <span key={partIndex} className="text-[#ffff00]">{part}</span>;
+                return (
+                  <span key={partIndex} className="text-[#ffff00]">
+                    {part}
+                  </span>
+                );
               }
               if (!isNaN(Number(part)) && part.trim() !== "") {
-                return <span key={partIndex} className="text-[#ff4444]">{part}</span>;
+                return (
+                  <span key={partIndex} className="text-[#ff4444]">
+                    {part}
+                  </span>
+                );
               }
-              if (part === 'true' || part === 'false') {
-                return <span key={partIndex} className="text-[#66d9ff]">{part}</span>;
+              if (part === "true" || part === "false") {
+                return (
+                  <span key={partIndex} className="text-[#66d9ff]">
+                    {part}
+                  </span>
+                );
               }
-              if (part === 'null') {
-                return <span key={partIndex} className="text-[#888888]">{part}</span>;
+              if (part === "null") {
+                return (
+                  <span key={partIndex} className="text-[#888888]">
+                    {part}
+                  </span>
+                );
               }
-              return <span key={partIndex} className="text-[#ffffff]">{part}</span>;
+              return (
+                <span key={partIndex} className="text-[#ffffff]">
+                  {part}
+                </span>
+              );
             })}
           </div>
         );
