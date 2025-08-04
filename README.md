@@ -9,6 +9,14 @@ Uma ferramenta web para realizar requisições HTTP a APIs, construída com Next
 
 ---
 
+##  🌐 Disponível Online
+
+Você também pode acessar e usar a ferramenta diretamente no seguinte endereço:
+
+**[api-request.edemilson.dev](https://api-request.edemilson.dev)**
+
+---
+
 ## ✨ Funcionalidades
 
 - Suporte a métodos HTTP: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`.
