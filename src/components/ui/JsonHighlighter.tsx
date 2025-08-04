@@ -2,8 +2,16 @@
 
 import React from "react";
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 interface JsonHighlighterProps {
-  data: unknown;
+  data: JsonValue;
 }
 
 const JsonHighlighter = ({ data }: JsonHighlighterProps) => {

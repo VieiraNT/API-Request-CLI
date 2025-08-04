@@ -1,22 +1,27 @@
 import { useState } from "react";
 
-// Interface para os cabeçalhos
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export interface Header {
   key: string;
   value: string;
 }
 
-// Interface para o estado da resposta
 export interface ApiResponse {
   status: number | null;
   statusText: string | null;
   headers: Record<string, string> | null;
   body: string | null;
-  parsedBody: any | null;
+  parsedBody: JsonValue | null;
   error: string | null;
 }
 
-// Estado inicial da resposta
 const initialApiResponse: ApiResponse = {
   status: null,
   statusText: null,
@@ -27,14 +32,12 @@ const initialApiResponse: ApiResponse = {
 };
 
 export function useApiRequester() {
-  // Estados da requisição
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
   const [headers, setHeaders] = useState<Header[]>([{ key: "", value: "" }]);
   const [requestBody, setRequestBody] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Estados da resposta
   const [apiResponse, setApiResponse] = useState<ApiResponse>(initialApiResponse);
   const [activeTab, setActiveTab] = useState("response");
 
@@ -71,7 +74,7 @@ export function useApiRequester() {
 
   const executeRequest = async () => {
     setIsLoading(true);
-    setApiResponse(initialApiResponse); // Limpa a resposta anterior
+    setApiResponse(initialApiResponse);
 
     try {
       const formattedHeaders = new Headers();
@@ -86,11 +89,9 @@ export function useApiRequester() {
         headers: formattedHeaders,
       };
 
-      // Adiciona o corpo da requisição apenas para métodos que o suportam
       const methodsWithBody = ["POST", "PUT", "PATCH"];
       if (methodsWithBody.includes(method) && requestBody) {
         options.body = requestBody;
-        // Adiciona Content-Type se não estiver presente nos headers
         if (!formattedHeaders.has("Content-Type")) {
           formattedHeaders.append("Content-Type", "application/json");
         }
@@ -98,22 +99,19 @@ export function useApiRequester() {
 
       const response = await fetch(url, options);
 
-      // Lê os headers da resposta
       const responseHeaders: Record<string, string> = {};
       response.headers.forEach((value, key) => {
         responseHeaders[key] = value;
       });
 
       const responseBodyText = await response.text();
-      let parsedJson = null;
+      let parsedJson: JsonValue | null = null;
       let formattedBody = responseBodyText;
 
       try {
         parsedJson = JSON.parse(responseBodyText);
         formattedBody = JSON.stringify(parsedJson, null, 2);
-      } catch (e) {
-        // Se não for JSON, mantém o texto simples
-      }
+      } catch {}
 
       setApiResponse({
         status: response.status,
@@ -124,7 +122,7 @@ export function useApiRequester() {
         error: null,
       });
 
-      setActiveTab("response"); // Volta para a tab de resposta após a execução
+      setActiveTab("response");
     } catch (err) {
       const error = err as Error;
       setApiResponse({
@@ -138,7 +136,6 @@ export function useApiRequester() {
   };
 
   return {
-    // Estados
     method,
     setMethod,
     url,
@@ -151,7 +148,6 @@ export function useApiRequester() {
     setActiveTab,
     isLoading,
     apiResponse,
-    // Funções
     addHeader,
     removeHeader,
     updateHeader,
