@@ -48,7 +48,7 @@ Você também pode acessar e usar a ferramenta diretamente no seguinte endereço
 Clone o repositório e execute a aplicação com os seguintes comandos:
 
 ```bash
-git clone https://github.com/seu-usuario/terminal-api-requester.git
+git clone https://github.com/VieiraNT/API-Request-CLI.git
 cd terminal-api-requester
 ````
 
