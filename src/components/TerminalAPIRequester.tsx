@@ -51,8 +51,8 @@ export default function TerminalAPIRequester() {
       (!requestBody || requestBody.trim() === "")
     ) {
       setRequestBody(`{
-  "key": "value",
-  "data": "example"
+    "key": "value",
+    "data": "example"
 }`);
       hasInitialized.current = true;
     }
