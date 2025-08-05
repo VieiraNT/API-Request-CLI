@@ -5,10 +5,25 @@ import JsonHighlighter from "../components/ui/JsonHighlighter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useRef } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Plus, Minus, Play, Loader2 } from "lucide-react";
+
+import Editor from "react-simple-code-editor";
+import Prism from "prismjs";
+import "prismjs/components/prism-json";
+import "prismjs/themes/prism-tomorrow.css";
+
+const highlightWithPrism = (code: string) =>
+  Prism.highlight(code, Prism.languages.json, "json");
 
 export default function TerminalAPIRequester() {
   const {
@@ -29,7 +44,19 @@ export default function TerminalAPIRequester() {
     getMethodColor,
     executeRequest,
   } = useApiRequester();
-
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (
+      !hasInitialized.current &&
+      (!requestBody || requestBody.trim() === "")
+    ) {
+      setRequestBody(`{
+  "key": "value",
+  "data": "example"
+}`);
+      hasInitialized.current = true;
+    }
+  }, [requestBody, setRequestBody]);
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#00ff41] font-mono p-4">
       <div className="max-w-6xl mx-auto">
@@ -40,30 +67,52 @@ export default function TerminalAPIRequester() {
             <div className="w-3 h-3 bg-[#ffff00] rounded-full"></div>
             <div className="w-3 h-3 bg-[#00ff41] rounded-full"></div>
           </div>
-          <div className="ml-4 text-[#ffffff] text-sm">{"> API_REQUESTER_TERMINAL v1.0.0"}</div>
+          <div className="ml-4 text-[#ffffff] text-sm">
+            {"> API_REQUESTER_TERMINAL v1.0.0"}
+          </div>
         </div>
 
         {/* Main Terminal Content */}
         <div className="bg-[#0a0a0a] border-2 border-[#555555] rounded-b-lg p-6 space-y-6">
           {/* Command Line Prompt */}
-          <div className="text-[#00ff41] text-sm mb-4 font-bold">{"user@terminal:~$ api-request --interactive"}</div>
+          <div className="text-[#00ff41] text-sm mb-4 font-bold">
+            {"user@terminal:~$ api-request --interactive"}
+          </div>
 
           {/* Method and URL Section */}
           <Card className="bg-[#111111] border-[#555555]">
             <CardHeader className="pb-3">
-              <div className="text-[#00ff41] text-sm font-bold">{"> REQUEST_CONFIG"}</div>
+              <div className="text-[#00ff41] text-sm font-bold">
+                {"> REQUEST_CONFIG"}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-4 items-end">
                 <div className="w-32">
-                  <label className="text-[#00ff41] text-xs mb-2 block font-bold">METHOD</label>
+                  <label className="text-[#00ff41] text-xs mb-2 block font-bold">
+                    METHOD
+                  </label>
                   <Select value={method} onValueChange={setMethod}>
                     <SelectTrigger className="bg-[#0a0a0a] border-[#555555] text-[#00ff41] font-mono">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#111111] border-[#555555]">
-                      {["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"].map((m) => (
-                        <SelectItem key={m} value={m} className={`font-mono ${getMethodColor(m)} hover:bg-[#0a0a0a]`}>
+                      {[
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "HEAD",
+                        "OPTIONS",
+                      ].map((m) => (
+                        <SelectItem
+                          key={m}
+                          value={m}
+                          className={`font-mono ${getMethodColor(
+                            m
+                          )} hover:bg-[#0a0a0a]`}
+                        >
                           {m}
                         </SelectItem>
                       ))}
@@ -71,7 +120,9 @@ export default function TerminalAPIRequester() {
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <label className="text-[#00ff41] text-xs mb-2 block font-bold">URL</label>
+                  <label className="text-[#00ff41] text-xs mb-2 block font-bold">
+                    URL
+                  </label>
                   <Input
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
@@ -99,7 +150,9 @@ export default function TerminalAPIRequester() {
           <Card className="bg-[#111111] border-[#555555]">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-center">
-                <div className="text-[#00ff41] text-sm font-bold">{"> HEADERS"}</div>
+                <div className="text-[#00ff41] text-sm font-bold">
+                  {"> HEADERS"}
+                </div>
                 <Button
                   onClick={addHeader}
                   size="sm"
@@ -113,7 +166,9 @@ export default function TerminalAPIRequester() {
             <CardContent className="space-y-2">
               {headers.map((header, index) => (
                 <div key={index} className="flex gap-2 items-center">
-                  <div className="text-[#888888] text-xs w-8">{String(index + 1).padStart(2, "0")}:</div>
+                  <div className="text-[#888888] text-xs w-8">
+                    {String(index + 1).padStart(2, "0")}:
+                  </div>
                   <Input
                     value={header.key}
                     onChange={(e) => updateHeader(index, "key", e.target.value)}
@@ -123,7 +178,9 @@ export default function TerminalAPIRequester() {
                   <div className="text-[#888888]">:</div>
                   <Input
                     value={header.value}
-                    onChange={(e) => updateHeader(index, "value", e.target.value)}
+                    onChange={(e) =>
+                      updateHeader(index, "value", e.target.value)
+                    }
                     placeholder="header-value"
                     className="bg-[#0a0a0a] border-[#555555] text-[#00ff41] font-mono placeholder:text-[#888888] flex-1"
                   />
@@ -145,17 +202,22 @@ export default function TerminalAPIRequester() {
           {/* Request Body Section */}
           <Card className="bg-[#111111] border-[#555555]">
             <CardHeader className="pb-3">
-              <div className="text-[#00ff41] text-sm font-bold">{"> REQUEST_BODY"}</div>
+              <div className="text-[#00ff41] text-sm font-bold">
+                {"> REQUEST_BODY"}
+              </div>
             </CardHeader>
             <CardContent>
-              <Textarea
+              <Editor
                 value={requestBody}
-                onChange={(e) => setRequestBody(e.target.value)}
-                placeholder={`{
-  "key": "value",
-  "data": "example"
-}`}
-                className="bg-[#0a0a0a] border-[#555555] text-[#00ff41] font-mono placeholder:text-[#888888] min-h-32 resize-y"
+                onValueChange={(code) => setRequestBody(code)}
+                highlight={highlightWithPrism}
+                padding={10}
+                className="bg-[#0a0a0a] text-[#00ff41] font-mono text-sm rounded-md overflow-auto min-h-32"
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 14,
+                  border: "1px solid #555",
+                }}
               />
             </CardContent>
           </Card>
@@ -163,10 +225,16 @@ export default function TerminalAPIRequester() {
           {/* Response Section */}
           <Card className="bg-[#111111] border-[#555555]">
             <CardHeader className="pb-3">
-              <div className="text-[#00ff41] text-sm font-bold">{"> RESPONSE_OUTPUT"}</div>
+              <div className="text-[#00ff41] text-sm font-bold">
+                {"> RESPONSE_OUTPUT"}
+              </div>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
                 <TabsList className="bg-[#0a0a0a] border-[#555555]">
                   <TabsTrigger
                     value="response"
@@ -198,11 +266,15 @@ export default function TerminalAPIRequester() {
                     ) : apiResponse.parsedBody ? (
                       <JsonHighlighter data={apiResponse.parsedBody} />
                     ) : apiResponse.body ? (
-                        <pre className="text-white font-mono text-sm">{apiResponse.body}</pre>
+                      <pre className="text-white font-mono text-sm">
+                        {apiResponse.body}
+                      </pre>
                     ) : apiResponse.error ? (
                       <div className="text-[#ff4444] font-mono text-sm">{`Error: ${apiResponse.error}`}</div>
                     ) : (
-                      <div className="text-[#888888] text-sm">{"> Waiting for request execution..."}</div>
+                      <div className="text-[#888888] text-sm">
+                        {"> Waiting for request execution..."}
+                      </div>
                     )}
                   </div>
                 </TabsContent>
@@ -215,16 +287,20 @@ export default function TerminalAPIRequester() {
                         Executing request...
                       </div>
                     ) : apiResponse.headers ? (
-                      Object.entries(apiResponse.headers).map(([key, value], index) => (
-                        <div key={index} className="flex gap-2">
-                          <span className="text-[#66d9ff]">{key}:</span>
-                          <span className="text-[#ffff00]">{value}</span>
-                        </div>
-                      ))
+                      Object.entries(apiResponse.headers).map(
+                        ([key, value], index) => (
+                          <div key={index} className="flex gap-2">
+                            <span className="text-[#66d9ff]">{key}:</span>
+                            <span className="text-[#ffff00]">{value}</span>
+                          </div>
+                        )
+                      )
                     ) : apiResponse.error ? (
                       <div className="text-[#ff4444] font-mono text-sm">{`Error: ${apiResponse.error}`}</div>
                     ) : (
-                      <div className="text-[#888888] text-sm">{"> Waiting for request execution..."}</div>
+                      <div className="text-[#888888] text-sm">
+                        {"> Waiting for request execution..."}
+                      </div>
                     )}
                   </pre>
                 </TabsContent>
@@ -240,10 +316,18 @@ export default function TerminalAPIRequester() {
                       <div className="text-[#00ff41] font-mono text-sm">
                         <div className="mb-2">
                           Status:{" "}
-                          <span className={`${apiResponse.status >= 400 ? "text-[#ff4444]" : "text-[#00ff41]"}`}>
+                          <span
+                            className={`${
+                              apiResponse.status >= 400
+                                ? "text-[#ff4444]"
+                                : "text-[#00ff41]"
+                            }`}
+                          >
                             {apiResponse.status}
                           </span>{" "}
-                          <span className="text-[#888888]">({apiResponse.statusText})</span>
+                          <span className="text-[#888888]">
+                            ({apiResponse.statusText})
+                          </span>
                         </div>
                         <div className="text-[#888888] text-sm">
                           {"> Request successfully executed."}
@@ -257,7 +341,9 @@ export default function TerminalAPIRequester() {
                         </div>
                       </div>
                     ) : (
-                      <div className="text-[#888888] text-sm">{"> Waiting for request execution..."}</div>
+                      <div className="text-[#888888] text-sm">
+                        {"> Waiting for request execution..."}
+                      </div>
                     )}
                   </div>
                 </TabsContent>
